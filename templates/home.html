@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block content %}
+<script>
+    function printMedicine(medicineId) {
+        fetch(`/print/${medicineId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Create an iframe element dynamically
+            var printFrame = document.createElement('iframe');
+            printFrame.name = 'print_frame';
+            printFrame.style.position = 'absolute';
+            printFrame.style.top = '-10000px';
+            document.body.appendChild(printFrame);
+    
+            // Write the print_text content to the iframe's document
+            var printDoc = printFrame.contentWindow ? printFrame.contentWindow : printFrame.contentDocument.document ? printFrame.contentDocument.document : printFrame.contentDocument;
+            printDoc.document.open();
+            printDoc.document.write(data.print_text);
+            printDoc.document.close();
+    
+            // Trigger the print dialog for the iframe
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+    
+            // Remove the iframe after printing
+            printFrame.parentNode.removeChild(printFrame);
+        });
+    }
+</script>
+<script>
+    function openLink(url) {
+        window.open(url, '_blank');
+    }
+</script>
+    <div>
+        <div>
+            <form class="search-form" method="GET">
+                <input type="text" name="query" placeholder=" Sök..." class="search-input">
+                <button type="submit" class="search-button">
+                        <img src="../static/pictures/search.svg" alt="Search">
+                </button>
+            </form>            
+        </div>
+        <div class="search-results">
+            {% if results %}
+            <h2> Resultat för "{{ query }}"</h2>
+                <ul>
+                    {% for item in results %}
+                        <div class="display-results">
+                            <span>{{ item.name }}</span>
+                            <div class="button-container">
+                                <button class="print-site-button" type="button" onclick="openLink('{{ item.link_url }}')">
+                                    <img src="../static/pictures/file-text.svg" alt="site">
+                                </button>
+                                <button class="print-site-button" type="button" onclick="printMedicine('{{ item.id }}')">
+                                    <img src="../static/pictures/printer.svg" alt="pdf_site">
+                                </button>
+                            </div>
+                        </div>
+                    
+                        
+                        </button>
+                    {% endfor %}
+                </ul>
+            {% elif query %}
+                <h2>Inga resultat för "{{ query }}"</h2>
+            {% else %}
+                <h2>Sök efter ett läkemedel</h2>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
